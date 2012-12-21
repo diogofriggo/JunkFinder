@@ -1,22 +1,13 @@
 require "pathname"
 
 class Program
-  @root
-  @extension
-
   def initialize (root, extension)
     @root = root
     @extension = extension
   end
 
-  def paths(path)
-    Pathname.new(path).children.collect do |child|
-      if child.file?
-        child
-      elsif child.directory?
-        paths(child) + [child]
-      end
-    end.select { |x| x }.flatten(1)
+  def unreferencedFiles
+    allFiles - referencedFiles
   end
 
   def allFiles
@@ -37,12 +28,18 @@ class Program
     end.flatten.uniq
   end
 
-  def unreferencedFiles
-    allFiles - referencedFiles
+  def paths(path)
+    Pathname.new(path).children.collect do |child|
+      if child.file?
+        child
+      elsif child.directory?
+        paths(child) + [child]
+      end
+    end.select { |x| x }.flatten(1)
   end
 end
 
 root = 'C:\Hcl.Move\Hcl.Move\Development\app\trunk\app\Hcl.Move.Web'
 %w{js css txt png gif jpg jpeg}.each do |extension|
-  Program.new(root, extension).unreferenced.each { |v| puts v }
+  Program.new(root, extension).unreferencedFiles.each { |file| puts file }
 end
